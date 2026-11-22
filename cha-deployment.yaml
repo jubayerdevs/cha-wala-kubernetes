@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cha-deployment
+  namespace: cha-express
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cha-wala
+  template:
+    metadata:
+      labels:
+        app: cha-wala
+    spec:
+      containers:
+        - name: cha-web
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: cha-config
+          env:
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cha-secret
+                  key: ADMIN_PASSWORD
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"
+          volumeMounts:
+            - name: cha-menu
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+      volumes:
+        - name: cha-menu
+          configMap:
+            name: cha-config
+            items:
+              - key: index.html
+                path: index.html

@@ -1,0 +1,36 @@
+# Corrected debugging example (the four original bugs are described in README.md)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cha-broken
+  namespace: cha-express
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cha-broken
+  template:
+    metadata:
+      labels:
+        app: cha-broken
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27-alpine
+          envFrom:
+            - configMapRef:
+                name: cha-config
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cha-broken-svc
+  namespace: cha-express
+spec:
+  selector:
+    app: cha-broken
+  ports:
+    - port: 80
+      targetPort: 80
